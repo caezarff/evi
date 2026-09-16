@@ -71,7 +71,7 @@ export function SiteFooter({
 
   return (
     <footer
-      className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-6 gap-y-4 px-6 py-7 text-sm leading-none tracking-tight text-[#141414]/65 sm:px-10 lg:px-16 max-sm:grid-cols-2"
+      className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-6 gap-y-2 px-6 py-3 text-sm leading-none tracking-tight text-[#141414]/65 sm:gap-y-4 sm:px-10 sm:py-7 lg:px-16 max-sm:grid-cols-2"
       style={{ backgroundColor }}
     >
       <span>evi @2026</span>

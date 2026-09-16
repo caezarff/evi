@@ -44,7 +44,7 @@ const SCALE: Partial<Record<number, number>> = {
 };
 const s = (i: number) => SCALE[i] ?? 1;
 
-// array order = stack order, back (z 2) -> front (z 9)
+// Array order follows the mobile reading order; z preserves the clustered stack.
 const CARDS: StackSpreadCard[] = [
   // top-left stripes (img08) — sm row 1 left
   {
@@ -52,7 +52,7 @@ const CARDS: StackSpreadCard[] = [
     stackOffset: { x: -8, y: -10 },
     stackRotate: -18,
     target: { x: -20, y: -34, rotate: 0, scale: s(8), w: 17, h: 22 },
-    targetSm: { x: -22, y: -40 },
+    targetSm: { x: -27, y: -38 },
     z: 2,
   },
   // top-right meadow (img07) — sm row 1 right
@@ -61,7 +61,7 @@ const CARDS: StackSpreadCard[] = [
     stackOffset: { x: 14, y: -10 },
     stackRotate: 20,
     target: { x: 32, y: -30, rotate: 0, scale: s(7), w: 18, h: 32 },
-    targetSm: { x: 22, y: -40 },
+    targetSm: { x: 27, y: -38 },
     z: 3,
   },
   // mid-left jacket (img06) — sm row 2 left
@@ -70,7 +70,7 @@ const CARDS: StackSpreadCard[] = [
     stackOffset: { x: -16, y: 0 },
     stackRotate: -4,
     target: { x: -36, y: -2, rotate: 0, scale: s(6), w: 15, h: 32 },
-    targetSm: { x: -22, y: -19 },
+    targetSm: { x: -27, y: -24 },
     z: 4,
   },
   // top-centre footballer (img05) — sm row 2 right
@@ -79,7 +79,7 @@ const CARDS: StackSpreadCard[] = [
     stackOffset: { x: 1, y: -10 },
     stackRotate: -2,
     target: { x: 6, y: -32, rotate: 0, scale: s(5), w: 25, h: 30 },
-    targetSm: { x: 22, y: -19 },
+    targetSm: { x: 27, y: -24 },
     z: 5,
   },
   // mid-right dog (img04) — sm row 3 left
@@ -88,35 +88,35 @@ const CARDS: StackSpreadCard[] = [
     stackOffset: { x: 18, y: 1 },
     stackRotate: 6,
     target: { x: 37, y: 6, rotate: 0, scale: s(4), w: 18, h: 32 },
-    targetSm: { x: -22, y: 20 },
+    targetSm: { x: -27, y: 20 },
     z: 6,
   },
-  // bottom-left breaker (img03) — sm row 3 right
-  {
-    item: { src: IMG.breaker, alt: "Breakdancer holding a pose" },
-    stackOffset: { x: -6, y: 10 },
-    stackRotate: 6,
-    target: { x: -24, y: 27, rotate: 0, scale: s(3), w: 22, h: 25 },
-    targetSm: { x: 22, y: 20 },
-    z: 7,
-  },
-  // bottom-centre painting (img02) — sm row 4 left
+  // bottom-centre painting (img02) — sm row 3 right
   {
     item: { src: IMG.painting, alt: "Renaissance fresco detail" },
     stackOffset: { x: 8, y: 7 },
     stackRotate: 3,
     target: { x: 2, y: 29, rotate: 0, scale: s(2), w: 20, h: 26 },
-    targetSm: { x: -22, y: 24 },
+    targetSm: { x: 27, y: 20 },
     z: 8,
   },
-  // bottom-right plane (img01) — sm row 4 right
+  // bottom-right plane (img01) — sm row 4 left
   {
     item: { src: IMG.plane, alt: "Vintage fighter plane" },
     stackOffset: { x: 20, y: 12 },
     stackRotate: -7,
     target: { x: 30, y: 30, rotate: 0, scale: s(1), w: 16, h: 20 },
-    targetSm: { x: 22, y: 24 },
+    targetSm: { x: -27, y: 33 },
     z: 9,
+  },
+  // bottom-left breaker (img03) — sm row 4 right
+  {
+    item: { src: IMG.breaker, alt: "Breakdancer holding a pose" },
+    stackOffset: { x: -6, y: 10 },
+    stackRotate: 6,
+    target: { x: -24, y: 27, rotate: 0, scale: s(3), w: 22, h: 25 },
+    targetSm: { x: 27, y: 33 },
+    z: 7,
   },
 ];
 
@@ -145,20 +145,18 @@ const RESPONSIVE = {
     card: null as { w: number; h: number } | null,
   },
   small: {
-    scale: 0.72,
+    scale: 0.55,
     small: true,
-    colX: 22,
-    card: { w: 40, h: 20 },
+    colX: 27,
+    card: { w: 46, h: 20 },
   },
 };
 
 function useResponsive() {
   const [r, setR] = useState(RESPONSIVE.desktop);
   useEffect(() => {
-    // Touch vs. mouse, not raw width: a narrow but mouse-driven frame (21st
-    // preview, split editor) keeps the desktop scatter + pointer parallax;
-    // only real touch devices drop to the stacked column layout.
-    const mq = window.matchMedia("(pointer: coarse)");
+    // The two-column composition is needed on touch screens and narrow frames.
+    const mq = window.matchMedia("(pointer: coarse), (max-width: 640px)");
     const read = () => setR(mq.matches ? RESPONSIVE.small : RESPONSIVE.desktop);
     read();
     mq.addEventListener("change", read);
@@ -220,11 +218,11 @@ export interface StackSpreadTarget {
 export interface StackSpreadCard {
   item: StackSpreadItem;
   target: StackSpreadTarget;
-  /** final x/y (vw/vh) for tablet + mobile; falls back to `target` */
+  /** final x/y (vw/dvh) for tablet + mobile; falls back to `target` */
   targetSm?: { x: number; y: number };
   /** angle while clustered */
   stackRotate?: number;
-  /** offset while clustered (vw/vh) */
+  /** offset while clustered (vw/dvh) */
   stackOffset?: { x: number; y: number };
   /** paint order, higher on top */
   z?: number;
@@ -282,7 +280,7 @@ function Card({
       const drift = depth * p;
       const dx = tx - px * PARALLAX_X * drift;
       const dy = ty - py * PARALLAX_Y * drift;
-      return `calc(-50% + ${dx}vw) calc(-50% + ${dy}vh)`;
+      return `calc(-50% + ${dx}vw) calc(-50% + ${dy}dvh)`;
     },
   );
   const rotate = useTransform(progress, [0, 1], [stackRotate, endRotate]);
@@ -293,7 +291,7 @@ function Card({
       className="absolute left-1/2 top-1/2 will-change-transform"
       style={{
         width: `${fixedCard ? fixedCard.w : target.w}vw`,
-        height: `${fixedCard ? fixedCard.h : target.h}vh`,
+        height: `${fixedCard ? fixedCard.h : target.h}dvh`,
         zIndex: card.z ?? 1,
         translate,
         rotate,
@@ -331,7 +329,7 @@ interface StackSpreadStageProps {
   cards: StackSpreadCard[];
   /** Destination for the contact button. */
   contactHref?: string;
-  /** scatter scroll distance, in vh */
+  /** scatter scroll distance, in dvh */
   scrollLength?: number;
   bgColor?: string;
   /** fan the clustered stack (default) or start flat */
@@ -408,15 +406,16 @@ function StackSpreadStage({
     <section
       ref={wrapRef}
       className="relative w-full"
-      style={{ height: `${scrollLength}vh`, backgroundColor: bgColor }}
+      style={{ height: `${scrollLength}dvh`, backgroundColor: bgColor }}
     >
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
+      <div className="sticky top-0 h-dvh w-full overflow-hidden">
         {/* centre text */}
         <motion.div
           className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center max-md:px-8"
           style={{
             opacity: copyOpacity,
             scale: noScale ? 1 : copyScale,
+            y: isSmall ? "-3dvh" : 0,
           }}
         >
           <h1
@@ -478,7 +477,7 @@ function StackSpreadStage({
         {/* scroll hint */}
         {showScrollHint && (
           <motion.div
-            className="pointer-events-none absolute inset-x-0 bottom-[3vh] z-20 flex flex-col items-center gap-[0.6vh] text-[0.8vw] font-medium uppercase tracking-[0.2em] max-md:bottom-6 max-md:gap-1 max-md:text-[2.8vw]"
+            className="pointer-events-none absolute inset-x-0 bottom-[3dvh] z-20 flex flex-col items-center gap-[0.6vh] text-[0.8vw] font-medium uppercase tracking-[0.2em] max-md:bottom-6 max-md:gap-1 max-md:text-xs"
             style={{ color: textColor, opacity: hintOpacity }}
           >
             <span>Scroll</span>
@@ -516,7 +515,7 @@ function StackSpreadStage({
 export interface StackSpreadProps {
   /** Destination for the contact button. */
   contactHref?: string;
-  /** scatter scroll distance, in vh */
+  /** scatter scroll distance, in dvh */
   scrollLength?: number;
   bgColor?: string;
   /** fan the clustered stack (default) or start flat */

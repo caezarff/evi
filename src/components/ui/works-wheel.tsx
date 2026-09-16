@@ -162,8 +162,8 @@ export function WorksWheel({
       drumR,
       bow: cardH * BOW,
       depth: cardH * LENS,
-      title: cardH * TITLE,
-      index: cardH * INDEX,
+      title: Math.max(cardH * TITLE, 22),
+      index: Math.max(cardH * INDEX, 14),
     }
   }, [stage, count])
 
